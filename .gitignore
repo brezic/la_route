@@ -1,3 +1,10 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+
+# Sauvegardes automatiques de Blender
+*.blend1
+*.blend2
+
+# Rapports de tests gdUnit4
+reports/

@@ -1,0 +1,134 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/world/road_builder.gd" id="1_road"]
+[ext_resource type="Script" path="res://scripts/world/biome_ground.gd" id="2_ground"]
+[ext_resource type="Script" path="res://scripts/world/roadside_scatter.gd" id="3_scatter"]
+[ext_resource type="Script" path="res://scripts/ui/mouse_capture.gd" id="4_mouse"]
+[ext_resource type="Resource" path="res://resources/biomes/temperate_simple.tres" id="5_biome"]
+[ext_resource type="PackedScene" path="res://scenes/vehicle/car.tscn" id="6_car"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="7_player"]
+[ext_resource type="PackedScene" path="res://scenes/world/finish_banner.tscn" id="8_banner"]
+
+[sub_resource type="ProceduralSkyMaterial" id="Sky_material"]
+sky_top_color = Color(0.435, 0.62, 0.769, 1)
+sky_horizon_color = Color(0.663, 0.776, 0.851, 1)
+ground_bottom_color = Color(0.3, 0.38, 0.22, 1)
+ground_horizon_color = Color(0.663, 0.776, 0.851, 1)
+sun_angle_max = 20.0
+
+[sub_resource type="Sky" id="Sky_main"]
+sky_material = SubResource("Sky_material")
+
+[sub_resource type="Environment" id="Environment_main"]
+background_mode = 2
+sky = SubResource("Sky_main")
+ambient_light_source = 2
+ambient_light_color = Color(0.663, 0.776, 0.851, 1)
+ambient_light_energy = 0.35
+tonemap_mode = 0
+fog_enabled = true
+fog_light_color = Color(0.663, 0.776, 0.851, 1)
+fog_density = 0.0025
+fog_sky_affect = 0.0
+
+[sub_resource type="BoxShape3D" id="Shape_ground"]
+size = Vector3(4000, 1, 4000)
+
+[sub_resource type="PlaneMesh" id="Mesh_ground"]
+size = Vector2(4000, 4000)
+
+[sub_resource type="Curve3D" id="Curve_road"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, -40, 0, 0, 0, 0, 0, 40, 0, 0, -40, 0, 0, -150, 0, 0, 50, 0, 0, -50, 35, 0, -300, 0, 0, 50, 0, 0, -50, 35, 0, -430, 0, 0, 60, 0, 0, -60, -30, 0, -600, 0, 0, 50, 0, 0, -50, -30, 0, -760, 0, 0, 40, 0, 0, -40, 0, 0, -900, 0, 0, 30, 0, 0, 0, 0, 0, -1000),
+"tilts": PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0)
+}
+point_count = 8
+
+[sub_resource type="StyleBoxFlat" id="Style_crosshair"]
+bg_color = Color(0.937, 0.898, 0.816, 0.8)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[node name="Main" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_main")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation = Vector3(-0.9, 0.6, 0)
+light_color = Color(1, 0.95, 0.86, 1)
+light_energy = 0.9
+shadow_enabled = true
+directional_shadow_max_distance = 150.0
+
+[node name="Ground" type="StaticBody3D" parent="."]
+position = Vector3(0, 0, -500)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+position = Vector3(0, -0.5, 0)
+shape = SubResource("Shape_ground")
+
+[node name="Mesh" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("Mesh_ground")
+script = ExtResource("2_ground")
+biome = ExtResource("5_biome")
+
+[node name="Road" type="Path3D" parent="."]
+curve = SubResource("Curve_road")
+script = ExtResource("1_road")
+
+[node name="RoadsideTrees" type="Node3D" parent="." node_paths=PackedStringArray("road")]
+script = ExtResource("3_scatter")
+road = NodePath("../Road")
+
+[node name="FinishBanner" parent="." instance=ExtResource("8_banner")]
+position = Vector3(0, 0, -1000)
+
+[node name="Car" parent="." instance=ExtResource("6_car")]
+position = Vector3(1.75, 0, -6)
+
+[node name="Player" parent="." instance=ExtResource("7_player")]
+position = Vector3(-1.2, 0, -3)
+
+[node name="MouseCapture" type="Node" parent="."]
+script = ExtResource("4_mouse")
+
+[node name="Hud" type="CanvasLayer" parent="."]
+
+[node name="Crosshair" type="Panel" parent="Hud"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Style_crosshair")
+
+[node name="Prompt" type="Label" parent="Hud"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -140.0
+offset_right = 300.0
+offset_bottom = -100.0
+theme_override_colors/font_color = Color(0.937, 0.898, 0.816, 1)
+theme_override_colors/font_outline_color = Color(0.129, 0.098, 0.078, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 26
+horizontal_alignment = 1
+vertical_alignment = 1
+auto_translate_mode = 2
+
+[connection signal="prompt_changed" from="Player/Head/Camera3D/Interactor" to="Hud/Prompt" method="set_text"]
+[connection signal="prompt_changed" from="Car/DriverSeat" to="Hud/Prompt" method="set_text"]
