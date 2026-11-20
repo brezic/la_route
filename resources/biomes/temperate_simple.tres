@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="BiomeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/biome_data.gd" id="1_biome"]
+
+[resource]
+script = ExtResource("1_biome")
+display_name_key = "BIOME_TEMPERATE_SIMPLE"
+ambient_celsius = 20.0
+grip_factor = 1.0
+ground_color = Color(0.478, 0.604, 0.306, 1)

@@ -1,0 +1,372 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/vehicle/vehicle_controller.gd" id="1_controller"]
+[ext_resource type="Script" path="res://scripts/vehicle/raycast_wheel.gd" id="2_wheel"]
+[ext_resource type="Script" path="res://scripts/vehicle/fuel_tank_component.gd" id="3_fuel"]
+[ext_resource type="Script" path="res://scripts/vehicle/engine_temperature_component.gd" id="4_temperature"]
+[ext_resource type="Script" path="res://scripts/vehicle/engine_component.gd" id="5_engine"]
+[ext_resource type="Script" path="res://scripts/vehicle/vehicle_input.gd" id="6_input"]
+[ext_resource type="Script" path="res://scripts/vehicle/driver_seat.gd" id="7_seat"]
+[ext_resource type="Script" path="res://scripts/interaction/interactable_component.gd" id="8_interactable"]
+[ext_resource type="Script" path="res://scripts/ui/dashboard.gd" id="9_dashboard"]
+[ext_resource type="Script" path="res://scripts/ui/gauge_needle.gd" id="10_needle"]
+[ext_resource type="Script" path="res://scripts/ui/warning_light.gd" id="11_light"]
+[ext_resource type="Resource" path="res://resources/biomes/temperate_simple.tres" id="12_biome"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_paint"]
+albedo_color = Color(0.949, 0.761, 0.188, 1)
+roughness = 0.7
+
+[sub_resource type="StandardMaterial3D" id="Mat_glass"]
+albedo_color = Color(0.184, 0.227, 0.251, 1)
+roughness = 0.3
+
+[sub_resource type="StandardMaterial3D" id="Mat_plastic"]
+albedo_color = Color(0.18, 0.169, 0.157, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Mat_headlight"]
+albedo_color = Color(0.949, 0.933, 0.894, 1)
+emission_enabled = true
+emission = Color(0.949, 0.933, 0.894, 1)
+emission_energy_multiplier = 0.3
+
+[sub_resource type="StandardMaterial3D" id="Mat_taillight"]
+albedo_color = Color(0.784, 0.216, 0.176, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_tire"]
+albedo_color = Color(0.118, 0.11, 0.102, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Mat_gauge_face"]
+albedo_color = Color(0.059, 0.051, 0.043, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Mat_needle"]
+shading_mode = 0
+albedo_color = Color(0.91, 0.451, 0.165, 1)
+
+[sub_resource type="BoxShape3D" id="Shape_body"]
+size = Vector3(1.6, 0.7, 3.7)
+
+[sub_resource type="BoxMesh" id="Mesh_lower_body"]
+material = SubResource("Mat_paint")
+size = Vector3(1.6, 0.6, 3.7)
+
+[sub_resource type="BoxMesh" id="Mesh_cabin_glass"]
+material = SubResource("Mat_glass")
+size = Vector3(1.4, 0.45, 1.9)
+
+[sub_resource type="BoxMesh" id="Mesh_roof"]
+material = SubResource("Mat_paint")
+size = Vector3(1.42, 0.08, 1.95)
+
+[sub_resource type="BoxMesh" id="Mesh_bumper"]
+material = SubResource("Mat_plastic")
+size = Vector3(1.66, 0.16, 0.12)
+
+[sub_resource type="BoxMesh" id="Mesh_headlight"]
+material = SubResource("Mat_headlight")
+size = Vector3(0.3, 0.16, 0.04)
+
+[sub_resource type="BoxMesh" id="Mesh_taillight"]
+material = SubResource("Mat_taillight")
+size = Vector3(0.3, 0.16, 0.04)
+
+[sub_resource type="CylinderMesh" id="Mesh_wheel"]
+material = SubResource("Mat_tire")
+top_radius = 0.29
+bottom_radius = 0.29
+height = 0.2
+radial_segments = 10
+rings = 0
+
+[sub_resource type="BoxShape3D" id="Shape_door"]
+size = Vector3(0.3, 1.0, 1.2)
+
+[sub_resource type="BoxMesh" id="Mesh_dash_panel"]
+material = SubResource("Mat_plastic")
+size = Vector3(0.66, 0.17, 0.05)
+
+[sub_resource type="CylinderMesh" id="Mesh_big_gauge"]
+material = SubResource("Mat_gauge_face")
+top_radius = 0.068
+bottom_radius = 0.068
+height = 0.01
+radial_segments = 16
+rings = 0
+
+[sub_resource type="CylinderMesh" id="Mesh_small_gauge"]
+material = SubResource("Mat_gauge_face")
+top_radius = 0.045
+bottom_radius = 0.045
+height = 0.01
+radial_segments = 12
+rings = 0
+
+[sub_resource type="BoxMesh" id="Mesh_big_needle"]
+material = SubResource("Mat_needle")
+size = Vector3(0.058, 0.006, 0.003)
+
+[sub_resource type="BoxMesh" id="Mesh_small_needle"]
+material = SubResource("Mat_needle")
+size = Vector3(0.04, 0.005, 0.003)
+
+[sub_resource type="BoxMesh" id="Mesh_warning_light"]
+size = Vector3(0.025, 0.025, 0.006)
+
+[node name="Car" type="RigidBody3D" node_paths=PackedStringArray("engine", "engine_temperature", "vehicle_input")]
+collision_layer = 2
+collision_mask = 5
+mass = 850.0
+center_of_mass_mode = 1
+center_of_mass = Vector3(0, 0.45, 0)
+can_sleep = false
+script = ExtResource("1_controller")
+engine = NodePath("Engine")
+engine_temperature = NodePath("EngineTemperature")
+vehicle_input = NodePath("VehicleInput")
+biome = ExtResource("12_biome")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.8, 0)
+shape = SubResource("Shape_body")
+
+[node name="Body" type="Node3D" parent="."]
+
+[node name="LowerBody" type="MeshInstance3D" parent="Body"]
+position = Vector3(0, 0.75, 0)
+mesh = SubResource("Mesh_lower_body")
+
+[node name="CabinGlass" type="MeshInstance3D" parent="Body"]
+position = Vector3(0, 1.275, 0.35)
+mesh = SubResource("Mesh_cabin_glass")
+
+[node name="Roof" type="MeshInstance3D" parent="Body"]
+position = Vector3(0, 1.54, 0.35)
+mesh = SubResource("Mesh_roof")
+
+[node name="FrontBumper" type="MeshInstance3D" parent="Body"]
+position = Vector3(0, 0.5, -1.88)
+mesh = SubResource("Mesh_bumper")
+
+[node name="RearBumper" type="MeshInstance3D" parent="Body"]
+position = Vector3(0, 0.5, 1.88)
+mesh = SubResource("Mesh_bumper")
+
+[node name="HeadlightLeft" type="MeshInstance3D" parent="Body"]
+position = Vector3(-0.55, 0.8, -1.86)
+mesh = SubResource("Mesh_headlight")
+
+[node name="HeadlightRight" type="MeshInstance3D" parent="Body"]
+position = Vector3(0.55, 0.8, -1.86)
+mesh = SubResource("Mesh_headlight")
+
+[node name="TaillightLeft" type="MeshInstance3D" parent="Body"]
+position = Vector3(-0.6, 0.85, 1.86)
+mesh = SubResource("Mesh_taillight")
+
+[node name="TaillightRight" type="MeshInstance3D" parent="Body"]
+position = Vector3(0.6, 0.85, 1.86)
+mesh = SubResource("Mesh_taillight")
+
+[node name="WheelFrontLeft" type="RayCast3D" parent="." node_paths=PackedStringArray("wheel_visual")]
+position = Vector3(-0.72, 0.55, -1.2)
+script = ExtResource("2_wheel")
+wheel_visual = NodePath("Visual")
+is_driven = true
+is_steering = true
+
+[node name="Visual" type="Node3D" parent="WheelFrontLeft"]
+
+[node name="Mesh" type="MeshInstance3D" parent="WheelFrontLeft/Visual"]
+rotation = Vector3(0, 0, 1.5708)
+mesh = SubResource("Mesh_wheel")
+
+[node name="WheelFrontRight" type="RayCast3D" parent="." node_paths=PackedStringArray("wheel_visual")]
+position = Vector3(0.72, 0.55, -1.2)
+script = ExtResource("2_wheel")
+wheel_visual = NodePath("Visual")
+is_driven = true
+is_steering = true
+
+[node name="Visual" type="Node3D" parent="WheelFrontRight"]
+
+[node name="Mesh" type="MeshInstance3D" parent="WheelFrontRight/Visual"]
+rotation = Vector3(0, 0, 1.5708)
+mesh = SubResource("Mesh_wheel")
+
+[node name="WheelRearLeft" type="RayCast3D" parent="." node_paths=PackedStringArray("wheel_visual")]
+position = Vector3(-0.72, 0.55, 1.2)
+script = ExtResource("2_wheel")
+wheel_visual = NodePath("Visual")
+has_handbrake = true
+
+[node name="Visual" type="Node3D" parent="WheelRearLeft"]
+
+[node name="Mesh" type="MeshInstance3D" parent="WheelRearLeft/Visual"]
+rotation = Vector3(0, 0, 1.5708)
+mesh = SubResource("Mesh_wheel")
+
+[node name="WheelRearRight" type="RayCast3D" parent="." node_paths=PackedStringArray("wheel_visual")]
+position = Vector3(0.72, 0.55, 1.2)
+script = ExtResource("2_wheel")
+wheel_visual = NodePath("Visual")
+has_handbrake = true
+
+[node name="Visual" type="Node3D" parent="WheelRearRight"]
+
+[node name="Mesh" type="MeshInstance3D" parent="WheelRearRight/Visual"]
+rotation = Vector3(0, 0, 1.5708)
+mesh = SubResource("Mesh_wheel")
+
+[node name="FuelTank" type="Node" parent="."]
+script = ExtResource("3_fuel")
+
+[node name="EngineTemperature" type="Node" parent="."]
+script = ExtResource("4_temperature")
+
+[node name="Engine" type="Node" parent="." node_paths=PackedStringArray("fuel_tank", "temperature")]
+script = ExtResource("5_engine")
+fuel_tank = NodePath("../FuelTank")
+temperature = NodePath("../EngineTemperature")
+
+[node name="VehicleInput" type="Node" parent="."]
+script = ExtResource("6_input")
+
+[node name="DoorArea" type="Area3D" parent="."]
+position = Vector3(-0.85, 0.9, 0.1)
+collision_layer = 8
+collision_mask = 0
+monitoring = false
+script = ExtResource("8_interactable")
+prompt_key = "INTERACT_ENTER_CAR"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DoorArea"]
+shape = SubResource("Shape_door")
+
+[node name="DriverSeat" type="Node3D" parent="." node_paths=PackedStringArray("vehicle_input", "engine", "door", "seat_camera", "exit_point")]
+position = Vector3(-0.35, 0, 0.1)
+script = ExtResource("7_seat")
+vehicle_input = NodePath("../VehicleInput")
+engine = NodePath("../Engine")
+door = NodePath("../DoorArea")
+seat_camera = NodePath("SeatCamera")
+exit_point = NodePath("ExitPoint")
+
+[node name="SeatCamera" type="Camera3D" parent="DriverSeat"]
+position = Vector3(0, 1.38, 0)
+rotation = Vector3(-0.14, 0, 0)
+fov = 75.0
+near = 0.03
+
+[node name="ExitPoint" type="Marker3D" parent="DriverSeat"]
+position = Vector3(-1.35, 0.2, 0)
+
+[node name="Dashboard" type="Node3D" parent="." node_paths=PackedStringArray("vehicle", "fuel_tank", "engine_temperature", "speed_needle", "fuel_needle", "temperature_needle", "overheat_light", "fuel_readout")]
+position = Vector3(-0.35, 1.14, -0.55)
+rotation = Vector3(-0.35, 0, 0)
+script = ExtResource("9_dashboard")
+vehicle = NodePath("..")
+fuel_tank = NodePath("../FuelTank")
+engine_temperature = NodePath("../EngineTemperature")
+speed_needle = NodePath("SpeedGauge/Needle")
+fuel_needle = NodePath("FuelGauge/Needle")
+temperature_needle = NodePath("TemperatureGauge/Needle")
+overheat_light = NodePath("OverheatLight")
+fuel_readout = NodePath("FuelReadout")
+
+[node name="Panel" type="MeshInstance3D" parent="Dashboard"]
+mesh = SubResource("Mesh_dash_panel")
+
+[node name="SpeedGauge" type="Node3D" parent="Dashboard"]
+position = Vector3(-0.17, 0, 0.026)
+
+[node name="Face" type="MeshInstance3D" parent="Dashboard/SpeedGauge"]
+rotation = Vector3(1.5708, 0, 0)
+mesh = SubResource("Mesh_big_gauge")
+
+[node name="Needle" type="Node3D" parent="Dashboard/SpeedGauge"]
+position = Vector3(0, 0, 0.008)
+script = ExtResource("10_needle")
+max_value = 180.0
+
+[node name="Mesh" type="MeshInstance3D" parent="Dashboard/SpeedGauge/Needle"]
+position = Vector3(0.025, 0, 0)
+mesh = SubResource("Mesh_big_needle")
+
+[node name="Unit" type="Label3D" parent="Dashboard/SpeedGauge"]
+position = Vector3(0, -0.03, 0.008)
+pixel_size = 0.0004
+modulate = Color(0.961, 0.651, 0.137, 1)
+text = "DASH_UNIT_SPEED"
+font_size = 40
+
+[node name="FuelGauge" type="Node3D" parent="Dashboard"]
+position = Vector3(0.04, 0.012, 0.026)
+
+[node name="Face" type="MeshInstance3D" parent="Dashboard/FuelGauge"]
+rotation = Vector3(1.5708, 0, 0)
+mesh = SubResource("Mesh_small_gauge")
+
+[node name="Needle" type="Node3D" parent="Dashboard/FuelGauge"]
+position = Vector3(0, -0.015, 0.008)
+script = ExtResource("10_needle")
+min_angle_degrees = 160.0
+max_angle_degrees = 20.0
+
+[node name="Mesh" type="MeshInstance3D" parent="Dashboard/FuelGauge/Needle"]
+position = Vector3(0.018, 0, 0)
+mesh = SubResource("Mesh_small_needle")
+
+[node name="Label" type="Label3D" parent="Dashboard/FuelGauge"]
+position = Vector3(0, -0.03, 0.008)
+pixel_size = 0.0003
+modulate = Color(0.961, 0.651, 0.137, 1)
+text = "DASH_LABEL_FUEL"
+font_size = 40
+
+[node name="TemperatureGauge" type="Node3D" parent="Dashboard"]
+position = Vector3(0.15, 0.012, 0.026)
+
+[node name="Face" type="MeshInstance3D" parent="Dashboard/TemperatureGauge"]
+rotation = Vector3(1.5708, 0, 0)
+mesh = SubResource("Mesh_small_gauge")
+
+[node name="Needle" type="Node3D" parent="Dashboard/TemperatureGauge"]
+position = Vector3(0, -0.015, 0.008)
+script = ExtResource("10_needle")
+min_value = 50.0
+max_value = 130.0
+min_angle_degrees = 160.0
+max_angle_degrees = 20.0
+
+[node name="Mesh" type="MeshInstance3D" parent="Dashboard/TemperatureGauge/Needle"]
+position = Vector3(0.018, 0, 0)
+mesh = SubResource("Mesh_small_needle")
+
+[node name="Label" type="Label3D" parent="Dashboard/TemperatureGauge"]
+position = Vector3(0, -0.03, 0.008)
+pixel_size = 0.0003
+modulate = Color(0.961, 0.651, 0.137, 1)
+text = "DASH_LABEL_TEMPERATURE"
+font_size = 40
+
+[node name="OverheatLight" type="MeshInstance3D" parent="Dashboard"]
+position = Vector3(0.26, 0.025, 0.03)
+mesh = SubResource("Mesh_warning_light")
+script = ExtResource("11_light")
+
+[node name="OverheatLabel" type="Label3D" parent="Dashboard"]
+position = Vector3(0.26, 0.002, 0.03)
+pixel_size = 0.00025
+modulate = Color(0.784, 0.216, 0.176, 1)
+text = "DASH_LABEL_OVERHEAT"
+font_size = 40
+
+[node name="FuelReadout" type="Label3D" parent="Dashboard"]
+position = Vector3(0.26, -0.045, 0.03)
+pixel_size = 0.0004
+modulate = Color(0.937, 0.898, 0.816, 1)
+text = "0.00 L"
+font_size = 40

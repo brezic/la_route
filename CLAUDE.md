@@ -10,6 +10,7 @@ Jeu Godot 4.7 (GDScript) de conduite et de survie : un road trip de 5 000 km.
 ## Outils
 - Godot 4.7.2 (console, pour lancer sans fenêtre, les tests et les logs) : `E:\logiciel_2\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe`
   - Exemple : `"<godot>" --headless --path . --quit`
+  - Tests : voir TECH_SPECS 3.9. Après ajout d'une classe (`class_name`), lancer d'abord `"<godot>" --headless --path . --import`.
 
 - Blender 5.3 : `E:\logiciel_2\blender\blender.exe` (sans fenêtre : `--background --python script.py`)
 - Blender MCP : serveur déclaré dans `.mcp.json` (`uvx mcp-for-blender`, nouveau nom du paquet `blender-mcp` ; add-on installé avec `uvx mcp-for-blender install-addon`). Dans Blender, il faut que l'add-on soit actif et connecté (vue 3D → N → onglet BlenderMCP → Connect).

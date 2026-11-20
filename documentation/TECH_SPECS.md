@@ -48,6 +48,8 @@ Tout ajout d'autoload doit être justifié dans ce document.
 - Le véhicule est un **`RigidBody3D` avec des roues faites maison en raycast** (suspension, adhérence et friction calculées par roue). `VehicleBody3D` n'est pas utilisé.
 - Ce choix donne un contrôle total sur l'adhérence par biome et par météo, l'usure des pneus et les roues amovibles.
 - Tout code de mouvement s'exécute dans `_physics_process(delta)`.
+- La physique tourne à **120 Hz** (`physics/common/physics_ticks_per_second`) : la suspension en raycast est plus stable avec un pas de temps court.
+- Répartition des rôles : `VehicleController` (orchestration), `RaycastWheel` (suspension et pneu), `EngineComponent`, `EngineTemperatureComponent`, `FuelTankComponent` (logique pure, testable sans scène), `VehicleInput` (lecture des commandes), `DriverSeat` (monter et descendre).
 
 ### 3.5 Monde de grande taille (5 000 km)
 - **Recentrage du monde (origin shifting)** : le monde est recentré régulièrement autour du joueur pour éviter la perte de précision des flottants.
@@ -64,6 +66,19 @@ Tout ajout d'autoload doit être justifié dans ce document.
 ### 3.7 Localisation et entrées
 - Tous les textes affichés passent par `tr()` avec des clés de traduction. Aucun texte en dur.
 - Toutes les entrées passent par l'**Input Map** (clavier/souris et manette), avec des touches réassignables.
+- Les touches sont liées par **position physique** (`physical_keycode`) pour fonctionner en AZERTY comme en QWERTY. L'affichage du nom de la touche passe par `InputHints`.
+- **Périphériques de simulation** : un pédalier ou un volant (ex : Thrustmaster) est vu par Godot comme une manette, et ses axes au repos valent souvent -1. Une liaison manette sur « tous les périphériques » (`device = -1`) fait alors bouger le joueur tout seul. Le support manette devra donc **filtrer les périphériques** (ex : `Input.is_joy_known()`), et le support volant/pédalier sera traité à part.
+
+### 3.8 Rendu et éclairage
+- Éclairage ambiant en **couleur fixe** (pas le ciel) et tonemap **linéaire** : les couleurs à l'écran restent fidèles à la palette.
+- Les maillages générés par code utilisent les **couleurs de sommets** (`vertex_color_use_as_albedo`, `vertex_color_is_srgb`) avec un matériau unique, dans l'esprit de la texture palette.
+- Les faces visibles doivent regarder vers l'extérieur (ordre des sommets) : une face retournée est éclairée par en dessous et paraît sombre.
+
+### 3.9 Tests
+- Lancer tous les tests (sans fenêtre) :
+  `"<godot>" --headless --path . -s -d --remote-debug tcp://127.0.0.1:0 res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests --ignoreHeadlessMode`
+- `tests/<domaine>/` : tests unitaires de la logique pure. `tests/integration/` : tests sur la scène réelle (physique, interaction).
+- Les rapports sont générés dans `reports/` (ignoré par Git).
 
 ## 4. Principes Clean Code (GDScript)
 
